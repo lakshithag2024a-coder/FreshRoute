@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Reservation ' + ${reservation.reservationCode} + ' - FreshRoute')}"></head>
+<body class="bg-light">
+
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div th:replace="~{fragments/layout :: alerts}"></div>
+
+<main class="py-4">
+    <div class="container">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb small">
+                <li class="breadcrumb-item"><a th:href="@{/}" class="text-success text-decoration-none">Home</a></li>
+                <li class="breadcrumb-item" th:if="${isRecipient}"><a th:href="@{/recipient/reservations}" class="text-success text-decoration-none">My Reservations</a></li>
+                <li class="breadcrumb-item" th:if="${isDonor}"><a th:href="@{/donor/pickups}" class="text-success text-decoration-none">Incoming Pickups</a></li>
+                <li class="breadcrumb-item active" aria-current="page" th:text="${reservation.reservationCode}">FR-2026-XXXX</li>
+            </ol>
+        </nav>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Collection Pass Card -->
+                <div class="card border-0 shadow-lg rounded-4 overflow-hidden bg-white mb-4">
+                    <!-- Pass Header -->
+                    <div class="p-4 text-white" style="background: linear-gradient(135deg, var(--forest-dark), var(--forest-primary));">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="badge bg-white bg-opacity-25 text-white small fw-bold mb-2">OFFICIAL FOOD RESCUE PASS</span>
+                                <h3 class="fw-bold font-monospace mb-0" th:text="${reservation.reservationCode}">FR-2026-X8K9</h3>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge fs-6 py-2 px-3" th:classappend="${reservation.status.badgeClass}" th:text="${reservation.status.displayName}">
+                                    Status
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Status Stepper Bar -->
+                    <div class="p-3 bg-light border-bottom">
+                        <div class="row text-center g-2 small">
+                            <div class="col-4">
+                                <div class="p-2 rounded-2" th:classappend="${reservation.reservedAt != null ? 'bg-success text-white fw-bold' : 'bg-white text-muted'}">
+                                    <i class="bi bi-calendar-check me-1"></i>1. Reserved
+                                </div>
+                                <small class="text-muted d-block mt-1" th:if="${reservation.reservedAt != null}" th:text="${#temporals.format(reservation.reservedAt, 'hh:mm a')}"></small>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-2 rounded-2" th:classappend="${reservation.confirmedAt != null ? 'bg-success text-white fw-bold' : (reservation.status.name() == 'RESERVED' ? 'bg-warning text-dark fw-bold' : 'bg-white text-muted')}">
+                                    <i class="bi bi-clock-history me-1"></i>2. Confirmed
+                                </div>
+                                <small class="text-muted d-block mt-1" th:if="${reservation.confirmedAt != null}" th:text="${#temporals.format(reservation.confirmedAt, 'hh:mm a')}"></small>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-2 rounded-2" th:classappend="${reservation.collectedAt != null ? 'bg-success text-white fw-bold' : 'bg-white text-muted'}">
+                                    <i class="bi bi-check2-all me-1"></i>3. Collected
+                                </div>
+                                <small class="text-muted d-block mt-1" th:if="${reservation.collectedAt != null}" th:text="${#temporals.format(reservation.collectedAt, 'hh:mm a')}"></small>
+                            </div>
+                        </div>
+
+                        <!-- Cancelled Banner if cancelled -->
+                        <div th:if="${reservation.status.name() == 'CANCELLED'}" class="alert alert-danger py-2 px-3 small rounded-3 mt-3 mb-0">
+                            <i class="bi bi-x-octagon-fill me-1"></i>
+                            This reservation was cancelled on <strong th:text="${#temporals.format(reservation.cancelledAt, 'dd MMM yyyy, hh:mm a')}">date</strong>.
+                            <span th:if="${reservation.cancellationReason != null}" th:text="'Reason: ' + ${reservation.cancellationReason}"></span>
+                        </div>
+                    </div>
+
+                    <!-- Pass Details Body -->
+                    <div class="card-body p-4 p-md-5">
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-7">
+                                <small class="text-muted text-uppercase fw-bold">Surplus Food Item</small>
+                                <h4 class="fw-bold text-dark mt-1 mb-1">
+                                    <a th:href="@{/marketplace/listings/{id}(id=${reservation.listing.id})}" class="text-decoration-none text-dark hover-forest" th:text="${reservation.listing.title}">
+                                        Food Title
+                                    </a>
+                                </h4>
+                                <span class="badge bg-secondary-subtle text-secondary mb-2" th:text="${reservation.listing.category.displayName}">Category</span>
+                                <p class="text-muted small mb-0" th:text="${reservation.listing.description}">Description</p>
+                            </div>
+
+                            <div class="col-md-5 text-md-end">
+                                <div class="p-3 bg-light rounded-3 border d-inline-block text-md-end w-100">
+                                    <small class="text-muted text-uppercase fw-bold d-block">Reserved Quantity</small>
+                                    <span class="fs-3 fw-bold text-success" th:text="${reservation.requestedQuantity + ' ' + reservation.listing.unit.displayName}">
+                                        5 Portions
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Logistics Details -->
+                        <div class="row g-4">
+                            <!-- Pickup Location -->
+                            <div class="col-md-6">
+                                <h6 class="fw-bold text-dark mb-2"><i class="bi bi-geo-alt-fill text-danger me-2"></i>Pickup Address</h6>
+                                <p class="mb-1 fw-semibold text-dark" th:text="${reservation.listing.donor.organizationName}">Donor Org</p>
+                                <p class="text-secondary small mb-2" th:text="${reservation.listing.pickupAddress}">Address</p>
+                                <div class="small text-muted">
+                                    <i class="bi bi-telephone me-1"></i>Donor Contact: <strong th:text="${reservation.listing.donorContact}">Phone</strong>
+                                </div>
+                            </div>
+
+                            <!-- Timing & Recipient -->
+                            <div class="col-md-6">
+                                <h6 class="fw-bold text-dark mb-2"><i class="bi bi-clock-fill text-warning me-2"></i>Pickup Deadline</h6>
+                                <div class="p-2 rounded bg-warning-subtle text-dark fw-bold mb-2 small d-inline-block">
+                                    <i class="bi bi-alarm me-1"></i>Must be collected before: 
+                                    <span th:text="${#temporals.format(reservation.listing.pickupDeadline, 'dd MMM yyyy, hh:mm a')}">Time</span>
+                                </div>
+                                <div class="small text-muted mt-2">
+                                    <span>Recipient: <strong th:text="${reservation.recipient.organizationName != null ? reservation.recipient.organizationName : reservation.recipient.fullName}">Recipient Org</strong></span>
+                                </div>
+                            </div>
+
+                            <!-- Pickup Notes if any -->
+                            <div th:if="${reservation.pickupNotes != null && !reservation.pickupNotes.isBlank()}" class="col-12">
+                                <div class="p-3 bg-light rounded-3 border">
+                                    <small class="text-muted fw-bold d-block mb-1">Pickup Notes Provided by Recipient:</small>
+                                    <p class="mb-0 small text-dark fst-italic" th:text="${reservation.pickupNotes}">Notes</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Action Buttons Section -->
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.print()">
+                                <i class="bi bi-printer me-1"></i>Print Collection Slip
+                            </button>
+
+                            <div class="d-flex gap-2">
+                                <!-- DONOR ACTIONS -->
+                                <div th:if="${isDonor || isAdmin}">
+                                    <!-- Confirm button if RESERVED -->
+                                    <form th:if="${reservation.canBeConfirmed()}" th:action="@{/reservations/{id}/confirm(id=${reservation.id})}" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-warning fw-bold text-dark">
+                                            <i class="bi bi-check2-circle me-1"></i>Confirm Reservation
+                                        </button>
+                                    </form>
+
+                                    <!-- Mark Collected button if CONFIRMED -->
+                                    <form th:if="${reservation.canBeCollected()}" th:action="@{/reservations/{id}/collect(id=${reservation.id})}" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-success fw-bold">
+                                            <i class="bi bi-box2-heart me-1"></i>Mark Food as Handed Over / Collected
+                                        </button>
+                                    </form>
+                                </div>
+
+                                <!-- CANCEL ACTION (Recipient or Donor if still active) -->
+                                <button th:if="${reservation.canBeCancelled()}" type="button" 
+                                        class="btn btn-outline-danger" 
+                                        data-bs-toggle="modal" data-bs-target="#cancelModal">
+                                    <i class="bi bi-x-circle me-1"></i>Cancel Reservation
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cancel Modal -->
+                <div th:if="${reservation.canBeCancelled()}" class="modal fade" id="cancelModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content rounded-4 border-0 shadow">
+                            <div class="modal-header bg-danger text-white">
+                                <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle me-2"></i>Cancel Reservation</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <form th:action="@{/reservations/{id}/cancel(id=${reservation.id})}" method="post">
+                                <div class="modal-body text-start">
+                                    <p class="text-dark">Are you sure you want to cancel this reservation?</p>
+                                    <p class="small text-muted mb-3">Cancelling will immediately release the reserved portions back into the surplus marketplace.</p>
+                                    <label class="form-label fw-semibold small text-muted">Reason for cancellation:</label>
+                                    <input type="text" name="reason" class="form-control" placeholder="e.g. Schedule conflict, transportation delay...">
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Keep Reservation</button>
+                                    <button type="submit" class="btn btn-danger fw-bold">Confirm Cancellation</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Impact Analytics & Sustainability Metrics - FreshRoute')}"></head>
+<body class="bg-light">
+
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div th:replace="~{fragments/layout :: alerts}"></div>
+
+<main class="py-4">
+    <div class="container">
+        <!-- Header -->
+        <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 mb-4 text-white"
+             style="background: linear-gradient(135deg, #133926 0%, #1e5638 50%, #2f6946 100%);">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <span class="badge bg-white bg-opacity-25 text-warning fw-semibold px-3 py-1 rounded-pill mb-2">
+                        <i class="bi bi-activity me-1"></i>Realtime Database Metrics
+                    </span>
+                    <h2 class="fw-bold mb-2">Platform Impact & Sustainability Intelligence</h2>
+                    <p class="text-white-50 mb-0">
+                        Tracking tangible food waste reduction, greenhouse gas mitigation, and community meals rescued in real-time.
+                    </p>
+                </div>
+                <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                    <div class="p-3 rounded-3 bg-white bg-opacity-10 border border-white border-opacity-25 d-inline-block text-start">
+                        <small class="text-white-50 d-block fw-semibold mb-1">RESCUE EFFICIENCY</small>
+                        <div class="display-6 fw-bold text-white mb-0" th:text="${impact.activeSuccessRatePercent + '%'}">94.5%</div>
+                        <small class="text-white-50">Community Claim Success Rate</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6 Metrics Cards Grid -->
+        <div class="row g-3 mb-4">
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <div class="stat-widget flex-column text-center p-3 h-100 justify-content-center">
+                    <div class="stat-val text-dark" th:text="${impact.totalListings}">0</div>
+                    <div class="stat-label small">Total Batches</div>
+                </div>
+            </div>
+
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <div class="stat-widget flex-column text-center p-3 h-100 justify-content-center">
+                    <div class="stat-val text-success" th:text="${impact.currentlyAvailable}">0</div>
+                    <div class="stat-label small">Live Available</div>
+                </div>
+            </div>
+
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <div class="stat-widget flex-column text-center p-3 h-100 justify-content-center">
+                    <div class="stat-val text-primary" th:text="${impact.successfulPickups}">0</div>
+                    <div class="stat-label small">Pickups Done</div>
+                </div>
+            </div>
+
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <div class="stat-widget flex-column text-center p-3 h-100 justify-content-center">
+                    <div class="stat-val text-forest" style="color: var(--forest-primary);" th:text="${impact.totalQuantityCollected}">0</div>
+                    <div class="stat-label small">Meals Rescued</div>
+                </div>
+            </div>
+
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <div class="stat-widget flex-column text-center p-3 h-100 justify-content-center">
+                    <div class="stat-val text-secondary" th:text="${impact.expiredOrUnclaimed}">0</div>
+                    <div class="stat-label small">Expired / Missed</div>
+                </div>
+            </div>
+
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <div class="stat-widget flex-column text-center p-3 h-100 justify-content-center">
+                    <div class="stat-val text-danger" th:text="${impact.estimatedFoodWasteAvoidedKg + ' kg'}">0 kg</div>
+                    <div class="stat-label small">Food Saved (kg)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart.js Visualizations Section -->
+        <div class="row g-4 mb-4">
+            <!-- Chart 1: Listing Status Breakdown (Doughnut) -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+                    <h5 class="fw-bold text-dark mb-1"><i class="bi bi-pie-chart-fill me-2 text-success"></i>Listing Status Distribution</h5>
+                    <p class="text-muted small mb-3">Breakdown of all surplus food batches published on FreshRoute.</p>
+                    <div style="position: relative; height: 260px;">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart 2: Category Breakdown (Bar) -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+                    <h5 class="fw-bold text-dark mb-1"><i class="bi bi-bar-chart-fill me-2 text-primary"></i>Rescued Meals by Category</h5>
+                    <p class="text-muted small mb-3">Collected portion volume segmented by food category.</p>
+                    <div style="position: relative; height: 260px;">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart 3: Monthly Pickup Trends -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+                    <h5 class="fw-bold text-dark mb-1"><i class="bi bi-graph-up me-2 text-warning"></i>Food Rescue Volume Over Time</h5>
+                    <p class="text-muted small mb-3">Monthly trend of completed surplus collections.</p>
+                    <div style="position: relative; height: 260px;">
+                        <canvas id="timelineChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Environmental Impact Model Documentation Card -->
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+            <h5 class="fw-bold text-dark mb-2"><i class="bi bi-info-circle-fill text-success me-2"></i>Impact Methodology & Mathematical Model</h5>
+            <p class="text-secondary small mb-3">
+                All platform figures are derived from persistent database records of completed pickups.
+            </p>
+            <div class="row g-3 small">
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded-3 border">
+                        <strong class="text-dark d-block mb-1">Food Waste Avoided (kg)</strong>
+                        <span class="text-muted">Calculated as: <code>Total Portions Collected &times; 0.50 kg/portion</code>. Based on standard institutional catering portion weights.</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded-3 border">
+                        <strong class="text-dark d-block mb-1">CO2e Emissions Prevented (kg)</strong>
+                        <span class="text-muted">Calculated as: <code>Food Waste Avoided (kg) &times; 2.50 kg CO2e/kg</code>. Based on FAO Food Wastage Footprint lifecycle analysis model.</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded-3 border">
+                        <strong class="text-dark d-block mb-1">Rescue Efficiency Rate (%)</strong>
+                        <span class="text-muted">Calculated as: <code>Successful Pickups / (Successful Pickups + Expired) &times; 100</code>. Measures community claim responsiveness.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+
+<!-- Chart.js Render Script -->
+<script th:inline="javascript">
+/*<![CDATA[*/
+document.addEventListener("DOMContentLoaded", function () {
+    // 1. Status Chart Data
+    const statusData = /*[[${impact.statusCounts}]]*/ {};
+    const statusLabels = Object.keys(statusData);
+    const statusValues = Object.values(statusData);
+
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: statusLabels,
+            datasets: [{
+                data: statusValues,
+                backgroundColor: ['#22c55e', '#f59e0b', '#06b6d4', '#64748b', '#ef4444'],
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
+            }
+        }
+    });
+
+    // 2. Category Chart Data
+    const categoryData = /*[[${impact.categoryQuantities}]]*/ {};
+    const categoryLabels = Object.keys(categoryData);
+    const categoryValues = Object.values(categoryData);
+
+    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+    new Chart(categoryCtx, {
+        type: 'bar',
+        data: {
+            labels: categoryLabels,
+            datasets: [{
+                label: 'Portions Rescued',
+                data: categoryValues,
+                backgroundColor: '#1e5638',
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+            }
+        }
+    });
+
+    // 3. Timeline Chart Data
+    const timelineData = /*[[${impact.pickupsByMonth}]]*/ {};
+    const timelineLabels = Object.keys(timelineData);
+    const timelineValues = Object.values(timelineData);
+
+    const timelineCtx = document.getElementById('timelineChart').getContext('2d');
+    new Chart(timelineCtx, {
+        type: 'line',
+        data: {
+            labels: timelineLabels,
+            datasets: [{
+                label: 'Rescued Volume',
+                data: timelineValues,
+                borderColor: '#e76f51',
+                backgroundColor: 'rgba(231, 111, 81, 0.1)',
+                fill: true,
+                tension: 0.3,
+                pointRadius: 4,
+                pointBackgroundColor: '#e76f51'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+});
+/*]]>*/
+</script>
+</body>
+</html>

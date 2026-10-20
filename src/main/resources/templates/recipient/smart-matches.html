@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Smart Matching Engine - FreshRoute')}"></head>
+<body class="bg-light">
+
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div th:replace="~{fragments/layout :: alerts}"></div>
+
+<main class="py-4">
+    <div class="container">
+        <!-- Header -->
+        <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 mb-4 text-white" 
+             style="background: linear-gradient(135deg, #133926 0%, #1e5638 50%, #285e40 100%);">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-white bg-opacity-25 text-warning small fw-bold mb-3">
+                        <i class="bi bi-cpu-fill"></i> Rule-Based Optimization Engine
+                    </div>
+                    <h2 class="fw-bold mb-2">Smart Surplus Food Matcher</h2>
+                    <p class="text-white-50 mb-0 max-w-700">
+                        Our deterministic algorithm ranks eligible food donations across three critical logistics dimensions: 
+                        <strong>Urgency / Time to Expiry</strong>, <strong>Quantity Demand Fit</strong>, and <strong>Transit Proximity</strong>.
+                    </p>
+                </div>
+                <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                    <div class="p-3 rounded-3 bg-white bg-opacity-10 border border-white border-opacity-25 d-inline-block text-start">
+                        <small class="text-white-50 d-block fw-semibold mb-1">ACTIVE WEIGHT PROFILE</small>
+                        <div class="small text-white">
+                            <div><i class="bi bi-clock me-1 text-warning"></i>Urgency Weight: <strong th:text="${urgencyWeight + '%'}">40%</strong></div>
+                            <div><i class="bi bi-box2 me-1 text-info"></i>Capacity Fit: <strong th:text="${quantityWeight + '%'}">35%</strong></div>
+                            <div><i class="bi bi-geo-alt me-1 text-success"></i>Transit Proximity: <strong th:text="${distanceWeight + '%'}">25%</strong></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Matching Criteria Form -->
+        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+            <h5 class="fw-bold text-dark mb-3"><i class="bi bi-sliders me-2 text-success"></i>Customize Your Rescue Request</h5>
+            <form th:action="@{/recipient/smart-matches}" method="get" class="row g-3">
+                <div class="col-lg-3 col-md-6">
+                    <label class="form-label fw-semibold small text-muted">Required Quantity (Portions / Units)</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light text-muted"><i class="bi bi-box-seam"></i></span>
+                        <input type="number" name="requestedQuantity" th:value="${criteria.requestedQuantity}" class="form-control" min="1" max="500" required>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <label class="form-label fw-semibold small text-muted">Preferred Category</label>
+                    <select name="category" class="form-select">
+                        <option value="">All Food Categories</option>
+                        <option th:each="cat : ${categories}" 
+                                th:value="${cat}" 
+                                th:text="${cat.displayName}"
+                                th:selected="${cat == criteria.category}">Category</option>
+                    </select>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <label class="form-label fw-semibold small text-muted">Maximum Transit Distance</label>
+                    <select name="maxDistanceKm" class="form-select">
+                        <option value="5.0" th:selected="${criteria.maxDistanceKm == 5.0}">Within 5 km (Immediate Neighborhood)</option>
+                        <option value="15.0" th:selected="${criteria.maxDistanceKm == 15.0}">Within 15 km (City Center)</option>
+                        <option value="25.0" th:selected="${criteria.maxDistanceKm == 25.0 || criteria.maxDistanceKm == null}">Within 25 km (Greater Metro)</option>
+                        <option value="50.0" th:selected="${criteria.maxDistanceKm == 50.0}">Within 50 km (Regional)</option>
+                    </select>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <label class="form-label fw-semibold small text-muted">Scoring Priority</label>
+                    <select name="urgencyPreference" class="form-select">
+                        <option value="BALANCED" th:selected="${criteria.urgencyPreference == 'BALANCED' || criteria.urgencyPreference == null}">Balanced Tri-Factor</option>
+                        <option value="URGENT_FIRST" th:selected="${criteria.urgencyPreference == 'URGENT_FIRST'}">⚡ Urgency First (Prevent Imminent Disposal)</option>
+                        <option value="CAPACITY_FIRST" th:selected="${criteria.urgencyPreference == 'CAPACITY_FIRST'}">🎯 Capacity Fit (Exact Quantity Match)</option>
+                        <option value="DISTANCE_FIRST" th:selected="${criteria.urgencyPreference == 'DISTANCE_FIRST'}">📍 Proximity (Lowest Transit Emissions)</option>
+                    </select>
+                </div>
+
+                <div class="col-12 d-flex justify-content-between align-items-center pt-2">
+                    <span class="text-muted small">
+                        <i class="bi bi-info-circle me-1"></i>Distances simulated based on location coordinates for local testing.
+                    </span>
+                    <button type="submit" class="btn btn-forest px-4 fw-bold">
+                        <i class="bi bi-funnel-fill me-1"></i>Calculate Ranked Matches
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Matching Results Header -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold text-dark mb-0">
+                Ranked Matching Results 
+                <span class="badge bg-forest text-white ms-2" style="background-color: var(--forest-primary);" th:text="${#lists.size(matchResults)}">0</span>
+            </h5>
+            <small class="text-muted">Ranked from highest composite compatibility score (100) down</small>
+        </div>
+
+        <!-- Empty State -->
+        <div th:if="${#lists.isEmpty(matchResults)}" class="text-center py-5 bg-white rounded-4 border p-4 shadow-sm">
+            <div class="mx-auto rounded-circle d-flex align-items-center justify-content-center mb-3 bg-light text-muted"
+                 style="width: 80px; height: 80px; font-size: 2.2rem;">
+                <i class="bi bi-radar"></i>
+            </div>
+            <h4 class="fw-bold text-dark">No eligible surplus matches found</h4>
+            <p class="text-muted small max-w-500 mx-auto">
+                No active listings currently satisfy your requested criteria and distance threshold. Try adjusting the category or extending the maximum radius.
+            </p>
+        </div>
+
+        <!-- Results List -->
+        <div th:unless="${#lists.isEmpty(matchResults)}" class="d-flex flex-column gap-3">
+            <div th:each="res : ${matchResults}" class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+                <div class="card-body p-4">
+                    <div class="row align-items-center g-3">
+                        <!-- Score Badge Column -->
+                        <div class="col-md-2 text-center border-end-md">
+                            <div class="match-score-badge mx-auto shadow-sm" th:classappend="${res.scoreBadgeClass}">
+                                <span class="score-number" th:text="${res.matchScore}">92</span>
+                                <span class="score-text">Match</span>
+                            </div>
+                            <div class="small fw-bold text-dark mt-2" th:text="${res.scoreGrade}">Exceptional Match</div>
+                        </div>
+
+                        <!-- Listing Details & Explanations -->
+                        <div class="col-md-7">
+                            <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                                <span class="category-pill small py-0 px-2">
+                                    <span th:text="${res.listing.category.displayName}">Category</span>
+                                </span>
+                                <span class="badge" th:classappend="${res.listing.urgencyBadgeClass}" th:text="${res.listing.timeRemainingDisplay}">
+                                    2h remaining
+                                </span>
+                                <span class="text-muted small">
+                                    <i class="bi bi-geo-alt me-1"></i><span th:text="${res.listing.simulatedDistanceKm + ' km (simulated)'}">2.5 km</span>
+                                </span>
+                            </div>
+
+                            <h5 class="fw-bold text-dark mb-1">
+                                <a th:href="@{/marketplace/listings/{id}(id=${res.listing.id})}" class="text-decoration-none text-dark hover-forest" th:text="${res.listing.title}">
+                                    Food Listing Title
+                                </a>
+                            </h5>
+                            <p class="text-muted small mb-2">
+                                <span class="fw-semibold text-dark" th:text="${res.listing.donor.organizationName != null ? res.listing.donor.organizationName : res.listing.donor.fullName}">Donor</span> &bull; 
+                                <span th:text="${res.listing.pickupAddress}">Address</span>
+                            </p>
+
+                            <!-- Score Dimension Breakdown Mini Bars -->
+                            <div class="row g-2 mb-3">
+                                <div class="col-4">
+                                    <small class="text-muted d-block" style="font-size: 0.72rem;">URGENCY SCORE</small>
+                                    <div class="progress" style="height: 6px;">
+                                        <div class="progress-bar bg-warning" th:style="'width: ' + ${res.urgencyScore} + '%'"></div>
+                                    </div>
+                                    <span class="small fw-bold text-dark" th:text="${res.urgencyScore + '/100'}">90/100</span>
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted d-block" style="font-size: 0.72rem;">CAPACITY FIT</small>
+                                    <div class="progress" style="height: 6px;">
+                                        <div class="progress-bar bg-success" th:style="'width: ' + ${res.quantityScore} + '%'"></div>
+                                    </div>
+                                    <span class="small fw-bold text-dark" th:text="${res.quantityScore + '/100'}">95/100</span>
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted d-block" style="font-size: 0.72rem;">TRANSIT PROXIMITY</small>
+                                    <div class="progress" style="height: 6px;">
+                                        <div class="progress-bar bg-info" th:style="'width: ' + ${res.distanceScore} + '%'"></div>
+                                    </div>
+                                    <span class="small fw-bold text-dark" th:text="${res.distanceScore + '/100'}">85/100</span>
+                                </div>
+                            </div>
+
+                            <!-- Explanation Reasons Badges -->
+                            <div class="d-flex flex-wrap gap-1">
+                                <span th:each="reason : ${res.matchReasons}" class="badge bg-light text-secondary border small fw-normal py-1 px-2" th:text="${reason}">
+                                    Reason tag
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Action Column -->
+                        <div class="col-md-3 text-md-end">
+                            <div class="p-2 bg-light rounded-3 border text-start mb-3">
+                                <small class="text-muted d-block">Available Batch:</small>
+                                <strong class="text-success fs-5" th:text="${res.listing.availableQuantity + ' ' + res.listing.unit.displayName}">10 Portions</strong>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <a th:href="@{/marketplace/listings/{id}(id=${res.listing.id})}" class="btn btn-mint fw-bold">
+                                    <i class="bi bi-bag-plus me-1"></i>Claim Surplus
+                                </a>
+                                <a th:href="@{/marketplace/listings/{id}(id=${res.listing.id})}" class="btn btn-outline-secondary btn-sm">
+                                    View Full Specs
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

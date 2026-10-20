@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="en">
+<head th:replace="~{fragments/layout :: head('Rescuing Surplus Food, Nourishing Communities')}"></head>
+<body>
+
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div th:replace="~{fragments/layout :: alerts}"></div>
+
+<main>
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container position-relative" style="z-index: 2;">
+            <div class="row align-items-center">
+                <div class="col-lg-7">
+                    <div class="hero-pill">
+                        <i class="bi bi-recycle"></i> Smart Surplus Food Rescue Platform
+                    </div>
+                    <h1 class="hero-title">
+                        Turn Surplus Food Into <span style="color: #6ee7b7;">Community Impact</span> Before Time Runs Out.
+                    </h1>
+                    <p class="hero-lead">
+                        FreshRoute bridges restaurants, bakeries, supermarkets, and college messes directly with local shelters and NGOs. Rule-based matching ensures surplus food is claimed and collected before pickup deadlines.
+                    </p>
+                    <div class="d-flex flex-wrap gap-3">
+                        <a th:href="@{/marketplace}" class="btn btn-mint btn-lg px-4 py-3 fw-bold">
+                            <i class="bi bi-search me-2"></i>Find Surplus Food
+                        </a>
+                        <a th:href="@{/donor/listings/new}" sec:authorize="hasRole('DONOR')" class="btn btn-outline-light btn-lg px-4 py-3 fw-bold">
+                            <i class="bi bi-plus-circle me-2"></i>List Surplus Batch
+                        </a>
+                        <a th:href="@{/register}" sec:authorize="isAnonymous()" class="btn btn-outline-light btn-lg px-4 py-3 fw-bold">
+                            <i class="bi bi-building me-2"></i>Join as Food Donor
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-lg-5 d-none d-lg-block">
+                    <div class="p-4 rounded-4 shadow-lg" style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.25);">
+                        <div class="d-flex justify-content-between align-items-center mb-3 text-white">
+                            <span class="badge bg-danger animate-pulse"><i class="bi bi-clock me-1"></i>Live Rescue Window</span>
+                            <small class="text-white-50">Instant Allocation</small>
+                        </div>
+                        <div class="bg-white rounded-3 p-3 text-dark mb-3 shadow-sm">
+                            <div class="d-flex justify-content-between">
+                                <span class="badge bg-success">Cooked Meals</span>
+                                <small class="text-danger fw-bold"><i class="bi bi-exclamation-circle me-1"></i>1h 30m left</small>
+                            </div>
+                            <h6 class="fw-bold mt-2 mb-1">Mediterranean Roasted Chicken Rice</h6>
+                            <p class="small text-muted mb-2"><i class="bi bi-geo-alt me-1"></i>Green Leaf Bistro (1.4 km)</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold text-success">18 Portions Available</span>
+                                <a th:href="@{/marketplace}" class="btn btn-sm btn-forest">Inspect Listing</a>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-3 p-3 text-dark shadow-sm">
+                            <div class="d-flex justify-content-between">
+                                <span class="badge bg-warning text-dark">Bakery Items</span>
+                                <small class="text-warning fw-bold"><i class="bi bi-clock me-1"></i>5h left</small>
+                            </div>
+                            <h6 class="fw-bold mt-2 mb-1">Artisan Sourdough Loaves & Croissants</h6>
+                            <p class="small text-muted mb-2"><i class="bi bi-geo-alt me-1"></i>Downtown Artisan Bakery (2.8 km)</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold text-success">16 Items Available</span>
+                                <a th:href="@{/marketplace}" class="btn btn-sm btn-forest">Inspect Listing</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Real Database-Backed Platform Impact Metrics -->
+    <section class="py-5" style="margin-top: -2.5rem; position: relative; z-index: 3;">
+        <div class="container">
+            <div class="row g-3">
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-widget">
+                        <div class="stat-icon-wrapper" style="background-color: var(--mint-soft); color: var(--forest-primary);">
+                            <i class="bi bi-box2-heart"></i>
+                        </div>
+                        <div>
+                            <div class="stat-val" th:text="${impact.totalListings}">0</div>
+                            <div class="stat-label">Total Food Listings</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-widget">
+                        <div class="stat-icon-wrapper" style="background-color: #ecfdf5; color: #047857;">
+                            <i class="bi bi-bag-check-fill"></i>
+                        </div>
+                        <div>
+                            <div class="stat-val" th:text="${impact.successfulPickups}">0</div>
+                            <div class="stat-label">Completed Pickups</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-widget">
+                        <div class="stat-icon-wrapper" style="background-color: #eff6ff; color: #1d4ed8;">
+                            <i class="bi bi-basket3-fill"></i>
+                        </div>
+                        <div>
+                            <div class="stat-val" th:text="${impact.totalQuantityCollected}">0</div>
+                            <div class="stat-label">Portions Rescued</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-widget">
+                        <div class="stat-icon-wrapper" style="background-color: #fef7ed; color: #c2410c;">
+                            <i class="bi bi-tree-fill"></i>
+                        </div>
+                        <div>
+                            <div class="stat-val" th:text="${impact.estimatedCo2EmissionsAvoidedKg + ' kg'}">0 kg</div>
+                            <div class="stat-label">CO2e Emissions Prevented</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How Platform Works -->
+    <section class="py-5 bg-white border-top border-bottom border-light-subtle">
+        <div class="container">
+            <div class="text-center max-w-700 mx-auto mb-5">
+                <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill fw-semibold mb-2">Simple, Rapid & Accountable</span>
+                <h2 class="fw-bold" style="color: var(--forest-dark);">How FreshRoute Rescues Surplus Food</h2>
+                <p class="text-muted">A closed-loop system designed to make food redistribution effortless for kitchens and community organizers.</p>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card h-100 p-4 border-0 rounded-4 bg-light text-center">
+                        <div class="mx-auto rounded-circle d-flex align-items-center justify-content-center mb-3"
+                             style="width: 68px; height: 68px; background: #e0f2fe; color: #0284c7; font-size: 1.8rem;">
+                            <i class="bi bi-shop"></i>
+                        </div>
+                        <h4 class="fw-bold mb-2">1. Donors Post Surplus</h4>
+                        <p class="text-muted small">
+                            Kitchens and stores list surplus batches with portion counts, pickup windows, allergen details, and a verified food safety pledge.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card h-100 p-4 border-0 rounded-4 bg-light text-center">
+                        <div class="mx-auto rounded-circle d-flex align-items-center justify-content-center mb-3"
+                             style="width: 68px; height: 68px; background: #fef3c7; color: #d97706; font-size: 1.8rem;">
+                            <i class="bi bi-cpu"></i>
+                        </div>
+                        <h4 class="fw-bold mb-2">2. Smart Matching & Reserve</h4>
+                        <p class="text-muted small">
+                            Our rule-based engine scores listings by urgency, distance, and capacity fit so recipients reserve exact needs in a click.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card h-100 p-4 border-0 rounded-4 bg-light text-center">
+                        <div class="mx-auto rounded-circle d-flex align-items-center justify-content-center mb-3"
+                             style="width: 68px; height: 68px; background: #dcfce7; color: #16a34a; font-size: 1.8rem;">
+                            <i class="bi bi-check2-circle"></i>
+                        </div>
+                        <h4 class="fw-bold mb-2">3. Pickup & Verification</h4>
+                        <p class="text-muted small">
+                            Recipients pick up food using unique verification codes. Donors confirm handover, instantly logging saved meals and CO2 savings.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Available Food Listings -->
+    <section class="py-5">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-end mb-4">
+                <div>
+                    <span class="badge bg-warning-subtle text-dark px-3 py-1 rounded-pill fw-semibold mb-1">Live Surplus</span>
+                    <h2 class="fw-bold" style="color: var(--forest-dark); margin-bottom: 0;">Urgent Available Listings</h2>
+                    <p class="text-muted mb-0 small">Surplus food currently awaiting pickup by registered community recipients.</p>
+                </div>
+                <a th:href="@{/marketplace}" class="btn btn-outline-forest fw-semibold">
+                    View All in Marketplace <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+
+            <!-- Empty State -->
+            <div th:if="${#lists.isEmpty(featuredListings)}" class="text-center py-5 bg-white rounded-4 border p-4">
+                <i class="bi bi-emoji-smile fs-1 text-success mb-2 d-block"></i>
+                <h5 class="fw-bold">No active surplus listings right now</h5>
+                <p class="text-muted">All current surplus food batches have been successfully rescued! Check back soon or list a new batch.</p>
+                <a th:href="@{/donor/listings/new}" class="btn btn-forest mt-2">Publish New Surplus Listing</a>
+            </div>
+
+            <!-- Listings Grid -->
+            <div th:unless="${#lists.isEmpty(featuredListings)}" class="row g-4">
+                <div th:each="item : ${featuredListings}" class="col-lg-4 col-md-6">
+                    <div class="fr-card fr-card-hover h-100 d-flex flex-column">
+                        <div class="p-3 border-bottom d-flex justify-content-between align-items-center bg-light">
+                            <span class="category-pill">
+                                <i class="bi bi-tag-fill text-success"></i>
+                                <span th:text="${item.category.displayName}">Category</span>
+                            </span>
+                            <span class="badge" th:classappend="${item.urgencyBadgeClass}" th:text="${item.timeRemainingDisplay}">
+                                2h left
+                            </span>
+                        </div>
+
+                        <div class="p-4 flex-grow-1">
+                            <h5 class="fw-bold text-dark mb-2">
+                                <a th:href="@{/marketplace/listings/{id}(id=${item.id})}" class="text-decoration-none text-dark hover-forest" th:text="${item.title}">
+                                    Surplus Food Title
+                                </a>
+                            </h5>
+                            <p class="text-muted small mb-3" style="min-height: 40px;" th:text="${#strings.abbreviate(item.description, 100)}">
+                                Description of surplus food batch...
+                            </p>
+
+                            <div class="d-flex align-items-center gap-2 mb-2 text-muted small">
+                                <i class="bi bi-building text-success"></i>
+                                <span class="fw-semibold text-dark" th:text="${item.donor.organizationName != null ? item.donor.organizationName : item.donor.fullName}">Donor Org</span>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-2 mb-3 text-muted small">
+                                <i class="bi bi-geo-alt text-danger"></i>
+                                <span th:text="${item.pickupAddress}">Address</span>
+                                <span class="badge bg-secondary-subtle text-secondary ms-auto" th:text="${item.simulatedDistanceKm + ' km'}">2.5 km</span>
+                            </div>
+
+                            <div class="p-2 rounded-3 bg-light border d-flex justify-content-between align-items-center">
+                                <span class="small text-muted">Available Quantity:</span>
+                                <span class="fw-bold text-success fs-6" th:text="${item.availableQuantity + ' ' + item.unit.displayName}">
+                                    10 Portions
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="p-3 bg-white border-top d-flex gap-2">
+                            <a th:href="@{/marketplace/listings/{id}(id=${item.id})}" class="btn btn-outline-forest w-50 btn-sm">
+                                <i class="bi bi-info-circle me-1"></i>Details
+                            </a>
+                            <a th:href="@{/marketplace/listings/{id}(id=${item.id})}" class="btn btn-mint w-50 btn-sm">
+                                <i class="bi bi-bag-plus me-1"></i>Reserve
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Food Safety Declaration Banner Section -->
+    <section class="py-4 bg-light">
+        <div class="container">
+            <div class="safety-alert-banner shadow-sm">
+                <div class="d-flex align-items-start">
+                    <i class="bi bi-shield-exclamation fs-3 text-warning me-3 mt-1"></i>
+                    <div>
+                        <h6 class="fw-bold mb-1">FreshRoute Food Safety & Compliance Framework</h6>
+                        <p class="mb-0 small">
+                            FreshRoute serves as a logistics and discovery platform connecting surplus food donors with authorized community recipients.
+                            All donors warrant compliance with local health regulations and appropriate temperature control. Recipients inspect items prior to consumption.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

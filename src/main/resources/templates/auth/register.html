@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Create Account - FreshRoute')}"></head>
+<body class="bg-light">
+
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div th:replace="~{fragments/layout :: alerts}"></div>
+
+<main class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-10">
+                <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+                    <div class="p-4 text-center text-white" style="background: linear-gradient(135deg, var(--forest-dark), var(--forest-primary));">
+                        <h3 class="fw-bold mb-1">Join the FreshRoute Network</h3>
+                        <p class="small text-white-50 mb-0">Choose your role to start listing surplus or claiming meals</p>
+                    </div>
+
+                    <div class="card-body p-4 p-md-5">
+                        <div th:if="${errorMessage}" class="alert alert-danger py-2 px-3 small rounded-3 mb-4">
+                            <i class="bi bi-exclamation-circle-fill me-2"></i>
+                            <span th:text="${errorMessage}">Error registering user</span>
+                        </div>
+
+                        <form th:action="@{/register}" th:object="${userDto}" method="post">
+                            <!-- Account Role Selection -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold text-dark mb-2">Select Your Platform Role *</label>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="card h-100 p-3 border rounded-3 cursor-pointer" style="cursor: pointer;">
+                                            <div class="d-flex align-items-center">
+                                                <input type="radio" th:field="*{role}" value="ROLE_DONOR" class="form-check-input me-3" id="roleDonor">
+                                                <div>
+                                                    <span class="fw-bold text-dark d-block"><i class="bi bi-shop me-1 text-success"></i>Food Donor</span>
+                                                    <small class="text-muted">Restaurant, Bakery, Supermarket, Campus Mess</small>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="card h-100 p-3 border rounded-3 cursor-pointer" style="cursor: pointer;">
+                                            <div class="d-flex align-items-center">
+                                                <input type="radio" th:field="*{role}" value="ROLE_RECIPIENT" class="form-check-input me-3" id="roleRecipient">
+                                                <div>
+                                                    <span class="fw-bold text-dark d-block"><i class="bi bi-heart-pulse me-1 text-primary"></i>Food Recipient</span>
+                                                    <small class="text-muted">Community Shelter, Food Pantry, NGO, Organizer</small>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div th:if="${#fields.hasErrors('role')}" th:errors="*{role}" class="text-danger small mt-1"></div>
+                            </div>
+
+                            <!-- Basic Info -->
+                            <h6 class="fw-bold text-success border-bottom pb-2 mb-3">Organization & Contact Details</h6>
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label for="organizationName" class="form-label fw-semibold small text-muted">Organization / Business Name</label>
+                                    <input type="text" th:field="*{organizationName}" class="form-control" placeholder="e.g. Bay Area Rescue Mission">
+                                    <div th:if="${#fields.hasErrors('organizationName')}" th:errors="*{organizationName}" class="text-danger small"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="fullName" class="form-label fw-semibold small text-muted">Representative Full Name *</label>
+                                    <input type="text" th:field="*{fullName}" class="form-control" placeholder="e.g. Jordan Smith" required>
+                                    <div th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}" class="text-danger small"></div>
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label for="email" class="form-label fw-semibold small text-muted">Email Address *</label>
+                                    <input type="email" th:field="*{email}" class="form-control" placeholder="jordan@example.org" required>
+                                    <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="text-danger small"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="phone" class="form-label fw-semibold small text-muted">Contact Phone Number *</label>
+                                    <input type="text" th:field="*{phone}" class="form-control" placeholder="+1 (555) 123-4567" required>
+                                    <div th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}" class="text-danger small"></div>
+                                </div>
+                            </div>
+
+                            <!-- Location Info -->
+                            <h6 class="fw-bold text-success border-bottom pb-2 mb-3 mt-4">Pickup / Delivery Location</h6>
+                            <div class="row g-3 mb-3">
+                                <div class="col-12">
+                                    <label for="address" class="form-label fw-semibold small text-muted">Street Address *</label>
+                                    <input type="text" th:field="*{address}" class="form-control" placeholder="123 Mission Boulevard" required>
+                                    <div th:if="${#fields.hasErrors('address')}" th:errors="*{address}" class="text-danger small"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="city" class="form-label fw-semibold small text-muted">City *</label>
+                                    <input type="text" th:field="*{city}" class="form-control" placeholder="San Francisco" required>
+                                    <div th:if="${#fields.hasErrors('city')}" th:errors="*{city}" class="text-danger small"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="zipCode" class="form-label fw-semibold small text-muted">ZIP / Postal Code</label>
+                                    <input type="text" th:field="*{zipCode}" class="form-control" placeholder="94103">
+                                </div>
+                            </div>
+
+                            <!-- Login Credentials -->
+                            <h6 class="fw-bold text-success border-bottom pb-2 mb-3 mt-4">Account Security Credentials</h6>
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-4">
+                                    <label for="username" class="form-label fw-semibold small text-muted">Username *</label>
+                                    <input type="text" th:field="*{username}" class="form-control" placeholder="unique_handle" required>
+                                    <div th:if="${#fields.hasErrors('username')}" th:errors="*{username}" class="text-danger small"></div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="password" class="form-label fw-semibold small text-muted">Password *</label>
+                                    <input type="password" th:field="*{password}" class="form-control" placeholder="At least 6 chars" required>
+                                    <div th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="text-danger small"></div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="confirmPassword" class="form-label fw-semibold small text-muted">Confirm Password *</label>
+                                    <input type="password" th:field="*{confirmPassword}" class="form-control" placeholder="Repeat password" required>
+                                    <div th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}" class="text-danger small"></div>
+                                </div>
+                            </div>
+
+                            <!-- Terms and Food Safety Acknowledgment -->
+                            <div class="form-check mb-4 p-3 bg-light rounded-3 border">
+                                <input class="form-check-input ms-0 me-2" type="checkbox" id="termsCheck" required checked>
+                                <label class="form-check-label small text-muted" for="termsCheck">
+                                    I agree to the FreshRoute Community Food Rescue Guidelines. I acknowledge that food items are intended for immediate distribution or consumption before stated deadlines, adhering to safe storage conditions.
+                                </label>
+                            </div>
+
+                            <button type="submit" class="btn btn-forest w-100 py-3 fw-bold shadow-sm">
+                                <i class="bi bi-check-circle me-1"></i>Complete Registration
+                            </button>
+                        </form>
+
+                        <div class="text-center mt-4">
+                            <span class="text-muted small">Already have an account? </span>
+                            <a th:href="@{/login}" class="fw-bold text-decoration-none text-success">Sign In Here</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

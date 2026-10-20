@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Manage Food Listings - FreshRoute')}"></head>
+<body class="bg-light">
+
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div th:replace="~{fragments/layout :: alerts}"></div>
+
+<main class="py-4">
+    <div class="container">
+        <!-- Header -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-3 border-bottom">
+            <div>
+                <h2 class="fw-bold text-dark mb-1">Your Surplus Food Listings</h2>
+                <p class="text-muted small mb-0">Track active batches, monitor pickup windows, and manage reservations.</p>
+            </div>
+            <div class="mt-3 mt-md-0 d-flex gap-2">
+                <a th:href="@{/donor/listings/new}" class="btn btn-forest shadow-sm fw-bold">
+                    <i class="bi bi-plus-circle me-1"></i>Publish New Batch
+                </a>
+                <a th:href="@{/donor/expiry-management}" class="btn btn-outline-danger shadow-sm">
+                    <i class="bi bi-hourglass-split me-1"></i>Expiry Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Filter Status Bar -->
+        <div class="d-flex flex-wrap gap-2 mb-4">
+            <a th:href="@{/donor/listings}" class="btn btn-sm"
+               th:classappend="${selectedStatus == null} ? 'btn-dark' : 'btn-outline-secondary'">
+                All Statuses (<span th:text="${#lists.size(listings)}">0</span>)
+            </a>
+            <a th:each="st : ${statuses}" 
+               th:href="@{/donor/listings(status=${st})}"
+               class="btn btn-sm"
+               th:classappend="${selectedStatus == st} ? 'btn-dark' : 'btn-outline-secondary'"
+               th:text="${st.displayName}">
+                Status
+            </a>
+        </div>
+
+        <!-- Listings Table -->
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+            <div th:if="${#lists.isEmpty(listings)}" class="text-center py-5">
+                <div class="mx-auto rounded-circle d-flex align-items-center justify-content-center mb-3 bg-light text-muted"
+                     style="width: 70px; height: 70px; font-size: 2rem;">
+                    <i class="bi bi-box2"></i>
+                </div>
+                <h5 class="fw-bold text-dark">No food listings match this filter</h5>
+                <p class="text-muted small">You don't have any surplus listings in this status right now.</p>
+                <a th:href="@{/donor/listings/new}" class="btn btn-sm btn-forest mt-1">Publish New Listing</a>
+            </div>
+
+            <div th:unless="${#lists.isEmpty(listings)}" class="table-responsive">
+                <table class="fr-table">
+                    <thead>
+                        <tr>
+                            <th>Listing Title</th>
+                            <th>Category</th>
+                            <th>Available / Total</th>
+                            <th>Pickup Deadline</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="item : ${listings}">
+                            <td>
+                                <a th:href="@{/marketplace/listings/{id}(id=${item.id})}" class="fw-bold text-dark text-decoration-none hover-forest" th:text="${item.title}">
+                                    Title
+                                </a>
+                                <small class="text-muted d-block text-truncate" style="max-width: 250px;" th:text="${item.pickupAddress}">Address</small>
+                            </td>
+                            <td>
+                                <span class="category-pill small py-0 px-2" th:text="${item.category.displayName}">Category</span>
+                            </td>
+                            <td>
+                                <span class="fw-bold text-success" th:text="${item.availableQuantity}">10</span>
+                                <span class="text-muted small" th:text="'/ ' + ${item.totalQuantity} + ' ' + ${item.unit.displayName}">/ 10 Portions</span>
+                            </td>
+                            <td>
+                                <span class="badge" th:classappend="${item.urgencyBadgeClass}" th:text="${item.timeRemainingDisplay}">Time</span>
+                                <small class="text-muted d-block" th:text="${#temporals.format(item.pickupDeadline, 'dd MMM, hh:mm a')}">Date</small>
+                            </td>
+                            <td>
+                                <span class="badge-status" th:classappend="${item.status.badgeClass}" th:text="${item.status.displayName}">Status</span>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-1">
+                                    <a th:href="@{/donor/listings/{id}/edit(id=${item.id})}" class="btn btn-sm btn-outline-secondary" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a th:href="@{/marketplace/listings/{id}(id=${item.id})}" class="btn btn-sm btn-outline-forest" title="View Public Details">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                                            data-bs-toggle="modal" th:data-bs-target="'#deleteModal-' + ${item.id}" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Delete Confirmation Modal -->
+                                <div class="modal fade" th:id="'deleteModal-' + ${item.id}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content rounded-4 border-0 shadow">
+                                            <div class="modal-header bg-danger text-white">
+                                                <h5 class="modal-title fw-bold">Delete Surplus Food Listing</h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body text-start">
+                                                <p class="text-dark">Are you sure you want to permanently remove <strong th:text="${item.title}">Title</strong>?</p>
+                                                <p class="small text-muted mb-0">This will withdraw the listing from the marketplace.</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                                                <form th:action="@{/donor/listings/{id}/delete(id=${item.id})}" method="post">
+                                                    <button type="submit" class="btn btn-danger fw-bold">Delete Listing</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

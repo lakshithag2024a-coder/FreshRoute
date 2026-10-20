@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="en">
+<head th:replace="~{fragments/layout :: head(${listing.title} + ' - FreshRoute Details')}"></head>
+<body class="bg-light">
+
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div th:replace="~{fragments/layout :: alerts}"></div>
+
+<main class="py-4">
+    <div class="container">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb small">
+                <li class="breadcrumb-item"><a th:href="@{/}" class="text-success text-decoration-none">Home</a></li>
+                <li class="breadcrumb-item"><a th:href="@{/marketplace}" class="text-success text-decoration-none">Marketplace</a></li>
+                <li class="breadcrumb-item active" aria-current="page" th:text="${listing.title}">Listing Title</li>
+            </ol>
+        </nav>
+
+        <div class="row g-4">
+            <!-- Left Main Content Column -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+                    <!-- Header with Category and Urgency -->
+                    <div class="p-4 bg-white border-bottom">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                            <span class="category-pill fs-6 py-1 px-3">
+                                <i class="bi bi-tag-fill text-success me-1"></i>
+                                <span th:text="${listing.category.displayName}">Category</span>
+                            </span>
+                            <div class="d-flex gap-2">
+                                <span class="badge" th:classappend="${listing.status.badgeClass}" th:text="${listing.status.displayName}">
+                                    Available
+                                </span>
+                                <span class="badge" th:classappend="${listing.urgencyBadgeClass}" th:text="${listing.timeRemainingDisplay}">
+                                    2h remaining
+                                </span>
+                            </div>
+                        </div>
+                        <h2 class="fw-bold text-dark mt-2 mb-2" th:text="${listing.title}">Surplus Food Title</h2>
+                        <div class="d-flex flex-wrap gap-3 text-muted small">
+                            <span><i class="bi bi-calendar3 me-1"></i>Listed: <span th:text="${#temporals.format(listing.createdAt, 'dd MMM yyyy, hh:mm a')}">Date</span></span>
+                            <span><i class="bi bi-clock-history me-1"></i>Prepared: <span th:text="${#temporals.format(listing.preparationTime, 'dd MMM, hh:mm a')}">Prep time</span></span>
+                        </div>
+                    </div>
+
+                    <!-- Details Body -->
+                    <div class="card-body p-4">
+                        <!-- Key Quantity & Deadline Highlight Box -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-sm-6">
+                                <div class="p-3 bg-light rounded-3 border">
+                                    <small class="text-muted d-block fw-semibold mb-1">AVAILABLE QUANTITY</small>
+                                    <div class="d-flex align-items-baseline">
+                                        <span class="fs-2 fw-bold text-success me-2" th:text="${listing.availableQuantity}">10</span>
+                                        <span class="text-muted" th:text="${listing.unit.displayName} + ' (out of ' + ${listing.totalQuantity} + ' listed)'">Portions</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="p-3 bg-light rounded-3 border">
+                                    <small class="text-muted d-block fw-semibold mb-1">PICKUP DEADLINE</small>
+                                    <div class="d-flex align-items-baseline">
+                                        <span class="fs-4 fw-bold text-danger me-2" th:text="${#temporals.format(listing.pickupDeadline, 'hh:mm a')}">05:00 PM</span>
+                                        <span class="text-muted small" th:text="${#temporals.format(listing.pickupDeadline, 'dd MMMM yyyy')}">Date</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <h5 class="fw-bold text-dark mb-2">Food Description</h5>
+                        <p class="text-secondary lh-lg mb-4" th:text="${listing.description}">
+                            Detailed description of the food surplus...
+                        </p>
+
+                        <!-- Food Safety & Handling Details -->
+                        <div class="border rounded-3 p-3 bg-light mb-4">
+                            <h6 class="fw-bold text-dark mb-3"><i class="bi bi-shield-check text-success me-2"></i>Safety & Handling Specifications</h6>
+                            <div class="row g-3 small">
+                                <div class="col-md-6">
+                                    <span class="fw-bold text-muted d-block">Allergens Information:</span>
+                                    <span th:text="${listing.allergens != null && !listing.allergens.isBlank() ? listing.allergens : 'No allergens declared / Plain produce'}">Allergens</span>
+                                </div>
+                                <div class="col-md-6">
+                                    <span class="fw-bold text-muted d-block">Storage / Temperature Requirement:</span>
+                                    <span th:text="${listing.storageRequirement != null && !listing.storageRequirement.isBlank() ? listing.storageRequirement : 'Standard food storage'}">Storage</span>
+                                </div>
+                                <div class="col-12 mt-2 pt-2 border-top">
+                                    <i class="bi bi-check-circle-fill text-success me-1"></i>
+                                    <span class="text-muted">Donor Food Safety Declaration Accepted on listing creation.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pickup Address & Donor Profile -->
+                        <h5 class="fw-bold text-dark mb-2">Pickup Location & Logistics</h5>
+                        <div class="p-3 bg-white border rounded-3 d-flex align-items-start gap-3">
+                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center text-danger p-3 fs-3">
+                                <i class="bi bi-geo-alt-fill"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="fw-bold mb-1" th:text="${listing.donor.organizationName != null ? listing.donor.organizationName : listing.donor.fullName}">Donor Name</h6>
+                                <p class="text-secondary small mb-1" th:text="${listing.pickupAddress}">Street Address, City</p>
+                                <div class="d-flex gap-3 text-muted small mt-2">
+                                    <span><i class="bi bi-telephone me-1"></i>Contact: <strong th:text="${listing.donorContact != null ? listing.donorContact : listing.donor.phone}">+1 555-0000</strong></span>
+                                    <span><i class="bi bi-pin-map me-1"></i>Simulated Proximity: <strong th:text="${listing.simulatedDistanceKm + ' km'}">2.5 km</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Legal Food Safety Disclaimer -->
+                <div class="safety-alert-banner shadow-sm">
+                    <div class="d-flex align-items-start">
+                        <i class="bi bi-info-circle-fill fs-4 text-warning me-3 mt-1"></i>
+                        <div>
+                            <h6 class="fw-bold mb-1">Surplus Food Rescue Notice</h6>
+                            <p class="small mb-0">
+                                FreshRoute facilitates the connection and reservation of surplus food between donors and recipients. While donors confirm food safety standards when listing, FreshRoute does not certify or inspect items physically. Authorized recipients must inspect food safety and packaging prior to handover.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar: Reservation Form or Status Card -->
+            <div class="col-lg-4">
+                <div class="sticky-top" style="top: 90px;">
+                    <!-- Case 1: If User is RECIPIENT (or ADMIN) and Listing is AVAILABLE -->
+                    <div th:if="${listing.availableForReservation}" class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-3">
+                        <h4 class="fw-bold text-dark mb-1">Reserve Surplus Food</h4>
+                        <p class="text-muted small mb-3">Secure this batch for your community organization before the deadline expires.</p>
+
+                        <div sec:authorize="hasAnyRole('RECIPIENT', 'ADMIN')">
+                            <form th:action="@{/reservations/new}" th:object="${reservationDto}" method="post">
+                                <input type="hidden" th:field="*{listingId}">
+
+                                <div class="mb-3">
+                                    <label for="requestedQuantity" class="form-label fw-semibold small text-muted">
+                                        Quantity Needed (<span th:text="${listing.unit.displayName}">Portions</span>) *
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="number" th:field="*{requestedQuantity}" 
+                                               class="form-control form-control-lg fw-bold text-success text-center" 
+                                               min="1" th:max="${listing.availableQuantity}" value="1" required>
+                                        <span class="input-group-text bg-light text-muted small" th:text="'Max: ' + ${listing.availableQuantity}">Max: 10</span>
+                                    </div>
+                                    <small class="text-muted d-block mt-1">Enter any quantity up to the total available.</small>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="pickupNotes" class="form-label fw-semibold small text-muted">Pickup Notes / Instructions (Optional)</label>
+                                    <textarea th:field="*{pickupNotes}" class="form-control" rows="3" 
+                                              placeholder="e.g. Estimated arrival time, vehicle description, or special transport containers..."></textarea>
+                                </div>
+
+                                <button type="submit" class="btn btn-forest w-100 py-3 fw-bold shadow-sm">
+                                    <i class="bi bi-bag-check me-2"></i>Confirm Reservation
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- If Guest / Anonymous -->
+                        <div sec:authorize="isAnonymous()" class="text-center py-3">
+                            <p class="text-muted small mb-3">Please sign in with a Recipient account to reserve surplus food.</p>
+                            <a th:href="@{/login}" class="btn btn-forest w-100 fw-bold mb-2">Sign In to Reserve</a>
+                            <a th:href="@{/register}" class="btn btn-outline-forest w-100 fw-semibold btn-sm">Register as Recipient</a>
+                        </div>
+
+                        <!-- If logged in as DONOR -->
+                        <div sec:authorize="hasRole('DONOR')" class="alert alert-info py-3 px-3 small rounded-3 mb-0">
+                            <i class="bi bi-info-circle me-1"></i>You are logged in as a <strong>Food Donor</strong>. Only registered recipients (shelters, charities, community volunteers) can reserve surplus items.
+                        </div>
+                    </div>
+
+                    <!-- Case 2: Listing is NOT available (Expired or Fully Reserved) -->
+                    <div th:unless="${listing.availableForReservation}" class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-3 text-center">
+                        <div class="mb-2">
+                            <span class="badge fs-6 py-2 px-3" th:classappend="${listing.status.badgeClass}" th:text="${listing.status.displayName}">
+                                Status
+                            </span>
+                        </div>
+                        <h5 class="fw-bold text-dark mt-2">Reservations Closed</h5>
+                        <p class="text-muted small mb-3" th:if="${listing.isExpired()}">
+                            This food listing has passed its pickup deadline (<span th:text="${#temporals.format(listing.pickupDeadline, 'dd MMM, hh:mm a')}">time</span>) and is no longer available.
+                        </p>
+                        <p class="text-muted small mb-3" th:unless="${listing.isExpired()}">
+                            All available portions for this listing have been claimed by community recipients.
+                        </p>
+                        <a th:href="@{/marketplace}" class="btn btn-outline-forest btn-sm">
+                            <i class="bi bi-arrow-left me-1"></i>Browse Other Surplus
+                        </a>
+                    </div>
+
+                    <!-- Owner Action Card (If current user is the donor) -->
+                    <div th:if="${currentUser != null && (currentUser.id == listing.donor.id || currentUser.admin)}" 
+                         class="card border-success border-2 shadow-sm rounded-4 p-4 bg-white">
+                        <h6 class="fw-bold text-success mb-2"><i class="bi bi-gear-wide-connected me-1"></i>Donor Management</h6>
+                        <p class="text-muted small mb-3">You own this food listing. You can update details or view incoming claims.</p>
+                        <div class="d-flex flex-column gap-2">
+                            <a th:href="@{/donor/listings/{id}/edit(id=${listing.id})}" class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-pencil me-1"></i>Edit Listing
+                            </a>
+                            <a th:href="@{/donor/pickups}" class="btn btn-forest btn-sm">
+                                <i class="bi bi-truck me-1"></i>View Reservations & Pickups
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Food Expiry & Safety Management - FreshRoute')}"></head>
+<body class="bg-light">
+
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div th:replace="~{fragments/layout :: alerts}"></div>
+
+<main class="py-4">
+    <div class="container">
+        <!-- Header -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-3 border-bottom">
+            <div>
+                <span class="badge bg-danger-subtle text-danger fw-semibold px-3 py-1 rounded-pill mb-1">
+                    <i class="bi bi-clock-history me-1"></i>Automated Expiry Monitor
+                </span>
+                <h2 class="fw-bold text-dark mb-0">Food Safety & Expiry Dashboard</h2>
+                <p class="text-muted small mb-0">Server time authoritative tracking ensures no expired surplus remains open for community reservations.</p>
+            </div>
+            <div class="mt-3 mt-md-0 d-flex gap-2">
+                <form th:action="@{/donor/expiry-management/sweep}" method="post">
+                    <button type="submit" class="btn btn-outline-danger fw-bold shadow-sm">
+                        <i class="bi bi-arrow-repeat me-1"></i>Run Realtime Expiry Sweep
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Food Safety Compliance Framework Box -->
+        <div class="safety-alert-banner shadow-sm mb-4">
+            <div class="d-flex align-items-start">
+                <i class="bi bi-shield-lock-fill fs-3 text-warning me-3 mt-1"></i>
+                <div>
+                    <h5 class="fw-bold mb-1">Authoritative Server Time Expiry Engine</h5>
+                    <p class="small mb-0">
+                        In accordance with food safety standards, FreshRoute automatically closes claims when the pickup deadline is reached. Listings approaching deadline (&lt; 2h) are tagged with high-visibility urgency badges across recipient feeds.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Critical Urgency Section (< 6 hours left) -->
+        <div class="card border-danger border-2 shadow-sm rounded-4 p-4 mb-4 bg-white">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold text-danger mb-0">
+                    <i class="bi bi-exclamation-triangle-fill me-2 animate-pulse"></i>Approaching Expiry (&lt; 6 Hours Remaining)
+                </h5>
+                <span class="badge bg-danger" th:text="${#lists.size(urgentListings)} + ' Urgent Listings'">0 Urgent</span>
+            </div>
+
+            <div th:if="${#lists.isEmpty(urgentListings)}" class="text-center py-4 bg-light rounded-3">
+                <i class="bi bi-check-circle-fill fs-3 text-success mb-2 d-block"></i>
+                <p class="text-muted small mb-0">No active surplus food listings are nearing immediate expiration.</p>
+            </div>
+
+            <div th:unless="${#lists.isEmpty(urgentListings)}" class="table-responsive">
+                <table class="fr-table">
+                    <thead>
+                        <tr>
+                            <th>Food Item</th>
+                            <th>Category</th>
+                            <th>Unclaimed Portions</th>
+                            <th>Time Left</th>
+                            <th>Deadline</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="item : ${urgentListings}">
+                            <td>
+                                <strong class="text-dark" th:text="${item.title}">Food Title</strong>
+                                <small class="text-muted d-block text-truncate" style="max-width: 250px;" th:text="${item.pickupAddress}">Address</small>
+                            </td>
+                            <td>
+                                <span class="category-pill small py-0 px-2" th:text="${item.category.displayName}">Category</span>
+                            </td>
+                            <td>
+                                <span class="fw-bold text-danger fs-6" th:text="${item.availableQuantity + ' ' + item.unit.displayName}">10 Portions</span>
+                            </td>
+                            <td>
+                                <span class="badge" th:classappend="${item.urgencyBadgeClass}" th:text="${item.timeRemainingDisplay}">1h 30m</span>
+                            </td>
+                            <td>
+                                <span class="small fw-semibold text-dark" th:text="${#temporals.format(item.pickupDeadline, 'hh:mm a')}">05:00 PM</span>
+                            </td>
+                            <td>
+                                <a th:href="@{/donor/listings/{id}/edit(id=${item.id})}" class="btn btn-sm btn-outline-forest">
+                                    <i class="bi bi-pencil me-1"></i>Extend Window
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Expired Surplus Listings -->
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+            <h5 class="fw-bold text-dark mb-3">
+                <i class="bi bi-archive-fill me-2 text-secondary"></i>Expired / Auto-Closed Listings
+            </h5>
+
+            <div th:if="${#lists.isEmpty(expiredListings)}" class="text-center py-4 bg-light rounded-3">
+                <p class="text-muted small mb-0">No expired listings recorded in your archive.</p>
+            </div>
+
+            <div th:unless="${#lists.isEmpty(expiredListings)}" class="table-responsive">
+                <table class="fr-table">
+                    <thead>
+                        <tr>
+                            <th>Food Item</th>
+                            <th>Category</th>
+                            <th>Unclaimed at Expiry</th>
+                            <th>Expired At</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="exp : ${expiredListings}">
+                            <td>
+                                <span class="fw-bold text-secondary" th:text="${exp.title}">Food Title</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-secondary border" th:text="${exp.category.displayName}">Cat</span>
+                            </td>
+                            <td>
+                                <span class="text-muted" th:text="${exp.availableQuantity + ' ' + exp.unit.displayName}">5 units</span>
+                            </td>
+                            <td>
+                                <small class="text-muted" th:text="${#temporals.format(exp.pickupDeadline, 'dd MMM yyyy, hh:mm a')}">Date</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary text-white">Closed (Expired)</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

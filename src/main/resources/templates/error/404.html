@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Page Not Found - FreshRoute')}"></head>
+<body class="bg-light">
+
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="py-5 text-center">
+    <div class="container py-5">
+        <div class="card border-0 shadow-sm rounded-4 p-5 max-w-600 mx-auto bg-white">
+            <div class="rounded-circle bg-warning-subtle text-warning mx-auto d-flex align-items-center justify-content-center mb-3"
+                 style="width: 80px; height: 80px; font-size: 2.5rem;">
+                <i class="bi bi-question-circle"></i>
+            </div>
+            <span class="badge bg-warning-subtle text-dark px-3 py-1 rounded-pill small fw-bold mb-2">Error 404 &bull; Not Found</span>
+            <h2 class="fw-bold text-dark mb-2">Page Not Found</h2>
+            <p class="text-muted mb-4">
+                The food listing, reservation, or page you requested does not exist or may have expired and been archived.
+            </p>
+            <div class="d-flex justify-content-center gap-2">
+                <a th:href="@{/}" class="btn btn-forest fw-bold px-4">Home</a>
+                <a th:href="@{/marketplace}" class="btn btn-outline-forest px-4">Explore Marketplace</a>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>
